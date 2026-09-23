@@ -8,22 +8,17 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-
-@Mixin(Screen.class)
+@Mixin(value = Screen.class, remap = false)
 public abstract class ScreenMixin extends AbstractContainerEventHandler implements ContainerEventHandler, GuiEventListener {
-    @Shadow
-    public abstract List<? extends GuiEventListener> children();
 
     @Inject(method = "tick", at = @At(value = "RETURN"))
     private void ldlib2$tick(CallbackInfo ci) {
-        for (var child : children()) {
+        for (var child : this.children()) {
             if (child instanceof IModularUIHolder holder) {
                 var mui = holder.getModularUI();
                 if (mui != null) {
@@ -35,7 +30,7 @@ public abstract class ScreenMixin extends AbstractContainerEventHandler implemen
 
     @Inject(method = "removed", at = @At(value = "RETURN"))
     private void ldlib2$removed(CallbackInfo ci) {
-        for (var child : children()) {
+        for (var child : this.children()) {
             if (child instanceof IModularUIHolder holder) {
                 var mui = holder.getModularUI();
                 if (mui != null) {
@@ -48,7 +43,7 @@ public abstract class ScreenMixin extends AbstractContainerEventHandler implemen
     @Inject(method = "keyPressed", at = @At(value = "HEAD"), cancellable = true)
     private void ldlib2$keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         var minecraft = Minecraft.getInstance();
-        for (var child : children()) {
+        for (var child : this.children()) {
             if (child instanceof IModularUIHolder holder) {
                 var mui = holder.getModularUI();
                 if (mui != null) {
@@ -65,7 +60,7 @@ public abstract class ScreenMixin extends AbstractContainerEventHandler implemen
 
     @Inject(method = "shouldCloseOnEsc", at = @At(value = "HEAD"), cancellable = true)
     private void ldlib2$shouldCloseOnEsc(CallbackInfoReturnable<Boolean> cir) {
-        for (var child : children()) {
+        for (var child : this.children()) {
             if (child instanceof IModularUIHolder holder) {
                 var mui = holder.getModularUI();
                 if (mui != null && !mui.shouldCloseOnEsc()) {

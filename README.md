@@ -4,6 +4,8 @@
 >
 > Original project: [Low-Drag-MC/LDLib2](https://github.com/Low-Drag-MC/LDLib2) by KilaBash / Low-Drag-MC.
 > This repository keeps the original project name, mod id, author metadata, and LGPL-3.0 license while adapting the codebase to Minecraft 1.20.1 Forge 47.x.
+>
+> Continued work of [Ku00115](https://github.com/Ku00115) this repository is forked from [LDLib2-Forge-1.20.1](https://github.com/Ku00115/LDLib2-Forge-1.20.1).
 
 <div align="center">
 

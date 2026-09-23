@@ -22,6 +22,7 @@ import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.FieldValueInspector;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.GraphInspector;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.command.VariableDeclarationCommands;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.dependency.ModelUpdateVisitor;
+import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.util.VariableDeclarationConfigurableHelper;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.model.ChangeHint;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.model.variable.ModifierFlags;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.model.variable.VariableDeclarationModelBase;
@@ -68,7 +69,7 @@ public class BlackboardVariableProperty extends BlackboardElement implements Sea
         setModel(variableModel);
         addClass("__blackboard-var-prop__");
         Style.defaultPipeline(getLayout(), l -> l.flexGrow(1).marginAll(2));
-
+        enableInlineRename(label);
         icon.addClass("__blackboard-var-prop_icon__");
         Style.defaultPipeline(icon.getLayout(), l -> l.aspectRatio(1).height(9));
         label.addClass("__blackboard-var-prop_label__");
@@ -190,48 +191,7 @@ public class BlackboardVariableProperty extends BlackboardElement implements Sea
     }
 
     protected IConfigurable createVariableConfigurable() {
-        return IConfigurable.create(group -> {
-            var rename = new StringConfigurator("graph.variable_name", () -> getModel().getName(),
-                    name -> getModel().setName(name),  getModel().getName(), true);
-            var defaultValue = new ConfiguratorGroup("graph.default_value").setCollapse(false);
-            getModel().buildConfigurator(defaultValue);
-            var subGraphConfigurator = new ConfiguratorSelectorConfigurator<>(
-                    "graph.variable_type",
-                    () -> getModel().getModifiers() == ModifierFlags.NONE ? VariableType.INTERNAL : VariableType.EXTERNAL,
-                    type -> {
-                        if (graphView == null) return;
-                        graphView.dispatchCommand(new VariableDeclarationCommands.ChangeVariableModifiersCommand(
-                                List.of(getModel()),
-                                type == VariableType.INTERNAL ? ModifierFlags.NONE : getDefaultSubgraphPortModifier()
-                        ));
-                    },
-                    VariableType.INTERNAL,
-                    true,
-                    getVariableTypeCandidates(),
-                    VariableType::getSerializedName,
-                    (type, configuratorGroup) -> {
-                        if (type == VariableType.EXTERNAL) {
-                            var portCandidates = getSubGraphPortCandidates();
-                            configuratorGroup.addConfigurator(EnumAccessor.create(
-                                    "graph.flow_direction",
-                                    portCandidates,
-                                    () -> getSelectedSubGraphPort(portCandidates),
-                                    io -> {
-                                        if (graphView == null) return;
-                                        graphView.dispatchCommand(new VariableDeclarationCommands.ChangeVariableModifiersCommand(
-                                                List.of(getModel()),
-                                                toModifier(io)
-                                        ));
-                                    },
-                                    portCandidates.isEmpty() ? SubGraphPort.INPUT : portCandidates.get(0),
-                                    true,
-                                    SubGraphPort::getIcon
-                            ));
-                        }
-                    }
-            );
-            group.addConfigurators(rename, defaultValue, subGraphConfigurator);
-        });
+        return VariableDeclarationConfigurableHelper.build(getModel(), graphView);
     }
 
     private List<VariableType> getVariableTypeCandidates() {

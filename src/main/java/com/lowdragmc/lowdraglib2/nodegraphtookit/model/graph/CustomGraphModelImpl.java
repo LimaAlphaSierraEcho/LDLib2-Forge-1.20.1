@@ -269,6 +269,7 @@ public class CustomGraphModelImpl extends GraphModel {
 
     @Override
     public void onGraphChanged(GraphLogger logger) {
+        super.onGraphChanged(logger);
         graph.onGraphChanged(logger);
     }
 

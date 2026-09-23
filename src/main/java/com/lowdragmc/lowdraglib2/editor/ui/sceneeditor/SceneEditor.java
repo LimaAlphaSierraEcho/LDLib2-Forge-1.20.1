@@ -25,6 +25,7 @@ import dev.vfyjxf.taffy.style.TaffyPosition;
 import lombok.Getter;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import org.appliedenergistics.yoga.*;
@@ -60,14 +61,6 @@ public class SceneEditor extends UIElement implements IScene {
     protected Map<UUID, ISceneObject> sceneObjects = new LinkedHashMap<>();
     @Getter
     protected final TransformGizmo transformGizmo;
-    public enum TransformGizmoMode {
-        TRANSLATE,
-        ROTATE,
-        SCALE,
-        NONE
-    }
-    @Getter
-    protected TransformGizmoMode transformGizmoMode = TransformGizmoMode.NONE;
 
     public SceneEditor() {
         this.topBar = new UIElement();
@@ -126,10 +119,12 @@ public class SceneEditor extends UIElement implements IScene {
     }
 
     public void disableTransformGizmo() {
+        transformGizmo.setEnabled(false);
         gizmoBar.setDisplay(false);
     }
 
     public void enableTransformGizmo() {
+        transformGizmo.setEnabled(true);
         gizmoBar.setDisplay(true);
     }
 
@@ -142,20 +137,16 @@ public class SceneEditor extends UIElement implements IScene {
         transformGizmo.setOnTransformChanged(onTransformUpdated);
         gizmoBar.setActive(transform != null);
         if (transform == null) {
-            setTransformGizmoMode(TransformGizmoMode.NONE);
+            transformGizmo.setMode(TransformGizmo.Mode.NONE);
         }
     }
 
-    public void setTransformGizmoMode(TransformGizmoMode mode) {
-        transformGizmoMode = mode;
-        if (mode != TransformGizmoMode.NONE) {
-            switch (mode) {
-                case TRANSLATE -> transformGizmo.setMode(TransformGizmo.Mode.TRANSLATE);
-                case ROTATE -> transformGizmo.setMode(TransformGizmo.Mode.ROTATE);
-                case SCALE -> transformGizmo.setMode(TransformGizmo.Mode.SCALE);
-                default -> throw new IllegalStateException("Unexpected value: " + mode);
-            }
-        }
+    public TransformGizmo.Mode getTransformGizmoMode() {
+        return transformGizmo.getMode();
+    }
+
+    public void setTransformGizmoMode(TransformGizmo.Mode mode) {
+        transformGizmo.setMode(mode);
     }
 
     public void initTopBar() {
@@ -178,25 +169,27 @@ public class SceneEditor extends UIElement implements IScene {
     public void initGizmos() {
         var toggleGroup = new Toggle.ToggleGroup().setAllowEmpty(true);
         // translate
-        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmoMode.TRANSLATE, Icons.TRANSFORM_TRANSLATE));
+        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmo.Mode.TRANSLATE, Icons.TRANSFORM_TRANSLATE));
         // rotation
-        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmoMode.ROTATE, Icons.TRANSFORM_ROTATE));
+        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmo.Mode.ROTATE, Icons.TRANSFORM_ROTATE));
         // scale
-        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmoMode.SCALE, Icons.TRANSFORM_SCALE));
+        gizmoBar.addChild(createTransformToggle(toggleGroup, TransformGizmo.Mode.SCALE, Icons.TRANSFORM_SCALE));
+        // local / global space toggle
+        gizmoBar.addChild(createSpaceToggle());
     }
 
 
-    private Toggle createTransformToggle(Toggle.ToggleGroup toggleGroup, TransformGizmoMode mode, IGuiTexture icon) {
+    private Toggle createTransformToggle(Toggle.ToggleGroup toggleGroup, TransformGizmo.Mode mode, IGuiTexture icon) {
         return (Toggle) new Toggle()
                 .setToggleGroup(toggleGroup)
                 .setText("")
-                .setOn(transformGizmoMode == mode, false)
+                .setOn(transformGizmo.getMode() == mode, false)
                 .toggleButton(button -> button.layout(layout -> {
                     layout.widthPercent(100);
                     layout.heightPercent(100);
                 }))
                 .setOnToggleChanged(isOn -> {
-                    setTransformGizmoMode(isOn ? mode : TransformGizmoMode.NONE);
+                    setTransformGizmoMode(isOn ? mode : TransformGizmo.Mode.NONE);
                 })
                 .toggleStyle(style -> {
                     style.baseTexture(IGuiTexture.EMPTY);
@@ -210,13 +203,43 @@ public class SceneEditor extends UIElement implements IScene {
                     layout.setAspectRatio(1f);
                 }).addEventListener(UIEvents.TICK, event -> {
                     if (event.currentElement instanceof Toggle toggle) {
-                        if (toggle.getValue() != (transformGizmoMode == mode)) {
-                            toggle.setValue(transformGizmoMode == mode, false);
+                        if (toggle.getValue() != (transformGizmo.getMode() == mode)) {
+                            toggle.setValue(transformGizmo.getMode() == mode, false);
                         }
                     }
                 }).addClass("__editor-gizmo-bar-toggle__");
     }
 
+    private Toggle createSpaceToggle() {
+        return (Toggle) new Toggle()
+                .setText("")
+                .setOn(transformGizmo.getSpace() == TransformGizmo.Space.GLOBAL, false)
+                .toggleButton(button -> button.layout(layout -> {
+                    layout.widthPercent(100);
+                    layout.heightPercent(100);
+                }))
+                .setOnToggleChanged(isOn ->
+                        transformGizmo.setSpace(isOn ? TransformGizmo.Space.GLOBAL : TransformGizmo.Space.LOCAL))
+                .toggleStyle(style -> {
+                    style.baseTexture(IGuiTexture.EMPTY);
+                    style.hoverTexture(ColorPattern.T_BLUE.rectTexture());
+                    style.unmarkTexture(Icons.LOCAL);
+                    style.markTexture(new GuiTextureGroup(ColorPattern.T_BLUE.rectTexture(), Icons.GLOBAL));
+                })
+                .layout(layout -> {
+                    layout.paddingAll(0);
+                    layout.widthPercent(100);
+                    layout.setAspectRatio(1f);
+                }).style(style -> style.tooltips("editor.gizmo.space"))
+                .addEventListener(UIEvents.TICK, event -> {
+                    if (event.currentElement instanceof Toggle toggle) {
+                        var isGlobal = transformGizmo.getSpace() == TransformGizmo.Space.GLOBAL;
+                        if (toggle.getValue() != isGlobal) {
+                            toggle.setValue(isGlobal, false);
+                        }
+                    }
+                }).addClass("__editor-gizmo-bar-toggle__");
+    }
 
     public Optional<Ray> getMouseRay() {
         var renderer = scene.getRenderer();
@@ -285,7 +308,7 @@ public class SceneEditor extends UIElement implements IScene {
         for (ISceneObject sceneObject : sceneObjects.values()) {
             sceneObject.executeAll(ISceneObject::updateTick);
         }
-        if (transformGizmo.hasTargetTransform()) {
+        if (transformGizmo.isActive()) {
             transformGizmo.updateTick();
         }
     }
@@ -301,7 +324,7 @@ public class SceneEditor extends UIElement implements IScene {
                         }
                     });
                 }
-                if (transformGizmo.hasTargetTransform()) {
+                if (transformGizmo.isActive()) {
                     result.set(result.get() | transformGizmo.onMouseClick(ray));
                 }
                 return result.get();
@@ -327,7 +350,7 @@ public class SceneEditor extends UIElement implements IScene {
                         }
                     });
                 }
-                if (transformGizmo.hasTargetTransform()) {
+                if (transformGizmo.isActive()) {
                     transformGizmo.onMouseRelease(ray);
                 }
             });
@@ -347,7 +370,7 @@ public class SceneEditor extends UIElement implements IScene {
                             }
                         });
                     }
-                    if (transformGizmo.hasTargetTransform()) {
+                    if (transformGizmo.isActive()) {
                         transformGizmo.onMouseDrag(ray);
                     }
                 });
@@ -358,9 +381,19 @@ public class SceneEditor extends UIElement implements IScene {
                 var lookAt = renderer.getLookAt();
                 var worldUp = renderer.getWorldUp();
                 var lookDir = new Vector3f(lookAt).sub(eyePos);
-                var cross = new Vector3f(lookDir).cross(worldUp).normalize();
-                lookDir = new Vector3f(lookDir).rotate(new Quaternionf(new AxisAngle4f((float) Math.toRadians(-event.deltaY + 360), cross)));
-                lookDir = new Vector3f(lookDir).rotate(new Quaternionf(new AxisAngle4f((float) Math.toRadians(-event.deltaX + 360), worldUp)));
+                var cross = new Vector3f(lookDir).cross(worldUp);
+                if (cross.lengthSquared() < 1.0e-6f) {
+                    // looking (near) straight up/down: cross is degenerate, recover with a stable horizontal axis
+                    cross.set(1, 0, 0);
+                }
+                cross.normalize();
+                // clamp pitch so the look direction never reaches the poles (avoids gimbal-lock flicker/spin)
+                var minPitchAngle = 0.5f;
+                var pitchToUp = (float) Math.toDegrees(lookDir.angle(worldUp));
+                var newPitchToUp = Mth.clamp(pitchToUp + event.deltaY, minPitchAngle, 180f - minPitchAngle);
+                var pitchAngle = pitchToUp - newPitchToUp;
+                lookDir = new Vector3f(lookDir).rotate(new Quaternionf(new AxisAngle4f((float) Math.toRadians(pitchAngle), cross)));
+                lookDir = new Vector3f(lookDir).rotate(new Quaternionf(new AxisAngle4f((float) Math.toRadians(-event.deltaX), worldUp)));
                 var center = new Vector3f(eyePos).add(new Vector3f(lookDir));
                 scene.setCenter(center);
                 Vector3f pos = new Vector3f(eyePos).sub(lookAt);
@@ -407,11 +440,27 @@ public class SceneEditor extends UIElement implements IScene {
         if (bufferSource instanceof MultiBufferSource.BufferSource buffer) {
             buffer.endBatch();
         }
-        if (transformGizmo.hasTargetTransform() && transformGizmoMode != TransformGizmoMode.NONE) {
+        if (transformGizmo.isActive()) {
             transformGizmo.updateFrame(partialTicks);
             transformGizmo.preDraw(partialTicks);
             transformGizmo.draw(poseStack, bufferSource, partialTicks);
             transformGizmo.postDraw(partialTicks);
+        }
+    }
+
+    @Override
+    public void drawBackgroundOverlay(GUIContext guiContext) {
+        super.drawBackgroundOverlay(guiContext);
+        // Show the transform readout (offset / degrees / scale) next to the cursor while dragging.
+        // It must be drawn in the overlay pass (after the scene child renders its 3D world) and with
+        // SEE_THROUGH so the scene's depth buffer can't occlude it.
+        if (transformGizmo.isActive() && transformGizmo.isDragging() && transformGizmo.getReadoutText() != null) {
+            var font = guiContext.mc.font;
+            font.drawInBatch(transformGizmo.getReadoutText(),
+                    (int) guiContext.localMouseX + 8, (int) guiContext.localMouseY - 12, 0xFFFFFF00, true,
+                    guiContext.graphics.pose().last().pose(), guiContext.graphics.bufferSource(),
+                    Font.DisplayMode.SEE_THROUGH, 0, 0xF000F0);
+            guiContext.graphics.flush();
         }
     }
 
@@ -434,7 +483,8 @@ public class SceneEditor extends UIElement implements IScene {
                 var realMoveSpeed = moveSpeed * guiContext.partialTick * (isShiftDown() ? 5 : 1);
                 var forward = new Vector3f(lookDir).normalize().mul(realMoveSpeed);
                 var right = new Vector3f(lookDir).cross(worldUp).normalize().mul(realMoveSpeed);
-                var up = new Vector3f(worldUp).normalize().mul(realMoveSpeed);
+                // camera up (screen up), perpendicular to the look direction, so it tilts with the camera pitch
+                var up = new Vector3f(right).cross(forward).normalize().mul(realMoveSpeed);
                 if (_forward) { // move forward
                     eyePos.add(forward);
                     lookAt.add(forward);

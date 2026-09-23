@@ -1,6 +1,9 @@
 buildscript {
     repositories {
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+        google()
+        maven { url 'https://www.jitpack.io' }
     }
     dependencies {
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
@@ -12,12 +15,14 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.jetbrains.kotlin.jvm' version '2.1.20'
     id 'org.jetbrains.kotlin.plugin.lombok' version '2.1.20'
     id 'io.freefair.lombok' version '9.2.0'
 }
 
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 
 version = mod_version
@@ -41,9 +46,9 @@ kotlin {
 }
 
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    copyIdeResources = true
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+    copyIdeResources = true
 
     runs {
         configureEach {
@@ -213,7 +218,7 @@ tasks.named('jar', Jar).configure {
                 'MixinConfigs'            : "${mod_id}.mixins.json"
         ])
     }
-    finalizedBy 'reobfJar'
+//    finalizedBy 'reobfJar'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -230,6 +235,16 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+}
+
+task devJar(type: Jar) {
+    mixin
+    archiveClassifier = 'dev'
+    from sourceSets.main.output
+}
+
+artifacts {
+    archives devJar
 }
 
 publishing {
