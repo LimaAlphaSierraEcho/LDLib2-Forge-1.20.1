@@ -88,13 +88,23 @@ public abstract class InputOutputPortsNodeModel extends PortNodeModel {
         nodeOptionsById.clear();
     }
 
-    @Override
-    public PortModel getPortFitToConnectTo(PortModel portModel) {
-        if (graphModel == null) return null;
+    /**
+     * Finds every port of this node the given port can be connected to, in display order.
+     *
+     * @param portModel the port to connect from
+     * @return the compatible ports, empty if there is none
+     */
+    public List<PortModel> getPortsFitToConnectTo(PortModel portModel) {
+        if (graphModel == null) return List.of();
         // Find a compatible port to connect to
         var requiredDirection = portModel.getDirection().getOpposite();
         var candidates = requiredDirection == PortDirection.INPUT ? getInputsByDisplayOrder() : getOutputsByDisplayOrder();
-        var compatiblePorts = graphModel.getCompatiblePorts(candidates, portModel);
-        return !compatiblePorts.isEmpty() ? compatiblePorts.get(0) : null;
+        return graphModel.getCompatiblePorts(candidates, portModel);
+    }
+
+    @Override
+    public PortModel getPortFitToConnectTo(PortModel portModel) {
+        var compatiblePorts = getPortsFitToConnectTo(portModel);
+        return compatiblePorts.isEmpty() ? null : compatiblePorts.get(0);
     }
 }

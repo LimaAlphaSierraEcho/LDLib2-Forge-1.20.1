@@ -1,4 +1,10 @@
 # ChangeLogs
+## v2.2.30
+* Fixed style resolve crash
+* Improved resource dialog searching
+* Improved ItemLibrary qol
+* Improved FileDialog
+
 ## v2.2.29
 * Fixed EnumAccessor weekmap
 * Improved the TreeList to support reordering dragging
@@ -9,7 +15,6 @@
 * Cached dialogAnchor Pos to remove dialog
 * Added fallback missport for ngt deserialization and improved save api
 * Bumped up jei compat
-
 
 ## v2.2.28
 * Fixed fbo clear color

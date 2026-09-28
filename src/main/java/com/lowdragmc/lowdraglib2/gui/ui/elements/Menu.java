@@ -125,7 +125,6 @@ public class Menu<K, T> extends UIElement {
     protected ITreeNode<K, T> openedNode;
     @Nullable
     protected Menu<K, T> opened;
-    protected boolean rootPopup;
 
     public Menu(ITreeNode<K, T> root) {
         this(root, (key) -> new TextElement().setText(key.toString()));
@@ -160,7 +159,13 @@ public class Menu<K, T> extends UIElement {
         }
 
         if (event.target == this) { // lose focus
-            if (isSelfOrOpenedMenuHover() && event.relatedTarget == null) {
+            if (event.relatedTarget != null) {
+                if (autoClose) {
+                    close();
+                }
+                return;
+            }
+            if (isSelfOrOpenedMenuHover()) {
                 focus();
             } else {
                 if (parentMenu != null && parentMenu.isSelfOrOpenedMenuHover()) {
@@ -201,7 +206,7 @@ public class Menu<K, T> extends UIElement {
             if (x < 0) {
                 layout(layout -> layout.left(getLayoutX() - x));
             } else if (x + width > screenWidth) {
-                if (x > width && parentMenu != null && !rootPopup) {
+                if (x > width && parentMenu != null) {
                     // move to the left first
                     layout(layout -> layout.left(0 - width));
                 } else {
@@ -214,7 +219,7 @@ public class Menu<K, T> extends UIElement {
     @Override
     protected void onAdded() {
         var mui = getModularUI();
-        if (mui != null && !rootPopup) {
+        if (mui != null) {
             mui.requestFocus(this);
         }
     }
@@ -322,7 +327,6 @@ public class Menu<K, T> extends UIElement {
         openedNode = child;
         opened = new Menu<>(child, uiProvider);
         opened.parentMenu = this;
-        opened.rootPopup = true;
         opened.setAutoClose(autoClose);
         opened.getMenuStyle().copyFrom(menuStyle);
         opened.setTextureProvider(textureProvider);
@@ -340,7 +344,6 @@ public class Menu<K, T> extends UIElement {
             opened.getLayout().left(pos.x);
             opened.getLayout().top(pos.y);
         } else {
-            opened.rootPopup = false;
             opened.getLayout().alignSelf(AlignItems.FLEX_START);
             opened.getLayout().left(anchor.getSizeWidth());
         }

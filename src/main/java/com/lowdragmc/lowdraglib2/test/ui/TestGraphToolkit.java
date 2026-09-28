@@ -8,10 +8,7 @@ import com.lowdragmc.lowdraglib2.nodegraphtookit.api.graph.Graph;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.GraphView;
 import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegister;
 import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegisterClient;
-import com.lowdragmc.lowdraglib2.test.noddegraphtoolkit.TestAddNode;
-import com.lowdragmc.lowdraglib2.test.noddegraphtoolkit.TestConstantNode;
-import com.lowdragmc.lowdraglib2.test.noddegraphtoolkit.TestGraph;
-import com.lowdragmc.lowdraglib2.test.noddegraphtoolkit.TestStringConcatNode;
+import com.lowdragmc.lowdraglib2.test.noddegraphtoolkit.*;
 import lombok.NoArgsConstructor;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +39,8 @@ public class TestGraphToolkit implements IMenuTest {
         // variables
         graph.graphModel.createVariable("test_v", Float.class, 10f, null);
         // nodes
+        graph.graphModel.createNodeModel(new OptionTestNode(), new Vector2f(350, 0));
+        graph.graphModel.createNodeModel(new TestDescriptionNode(), new Vector2f(350, 150));
         graph.graphModel.createNodeModel(new TestStringConcatNode(), new Vector2f(200, 200));
         var constant = graph.graphModel.createNodeModel(new TestConstantNode(), new Vector2f(0));
         var add1 = graph.graphModel.createNodeModel(new TestAddNode(), new Vector2f(50));

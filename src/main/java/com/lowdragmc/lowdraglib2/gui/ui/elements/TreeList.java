@@ -133,6 +133,17 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
     protected boolean doubleClickToExpand = true;
     @Setter
     protected boolean clickToExpand = false;
+    /**
+     * Gates {@link #clickToExpand} per node. Nodes rejected by this filter are only expanded by their
+     * arrow (or {@link #rightClickToExpand}), so a left click on them does nothing but select.
+     */
+    @Setter
+    protected Predicate<NODE> clickToExpandFilter = Predicates.alwaysTrue();
+    /**
+     * When true, a right click on a branch toggles its expanded state. Default {@code false}.
+     */
+    @Setter
+    protected boolean rightClickToExpand = false;
     @Setter
     protected boolean supportMultipleSelection = false;
     @Setter
@@ -168,7 +179,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
     @Getter
     protected final BiMap<NODE, UIElement> nodeUIs = HashBiMap.create();
     protected final Set<NODE> selectedNodes = new LinkedHashSet<>();
-    @Getter @Nullable
+    @Nullable
     protected NODE hoveredNode = null;
     @Getter
     protected final Set<NODE> expandedNodes = new HashSet<>();
@@ -291,6 +302,27 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
         return Collections.unmodifiableSet(selectedNodes);
     }
 
+    @Nullable
+    public NODE getHoveredNode() {
+        if (hoveredNode != null) return hoveredNode;
+        var mui = getModularUI();
+        if (mui != null) {
+            return getNodeAt(mui.getLastMouseX(), mui.getLastMouseY());
+        }
+        return null;
+    }
+
+    @Nullable
+    public NODE getNodeAt(float worldX, float worldY) {
+        for (var entry : nodeUIs.entrySet()) {
+            var ui = entry.getValue();
+            if (ui.isMouseOver(worldX, worldY)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
     public TreeList<NODE> setSelected(Collection<NODE> selected, boolean notify) {
         if (selectedNodes.equals(selected)) return this;
         selectedNodes.clear();
@@ -398,6 +430,27 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
             }
         } else {
             collapseNode(root);
+        }
+    }
+
+    /**
+     * Whether left clicking the given node's row expands it. When it doesn't, its arrow takes over as
+     * the expand affordance.
+     */
+    public boolean expandsOnClick(NODE node) {
+        return clickToExpand && clickToExpandFilter.test(node);
+    }
+
+    /**
+     * Expands the given node if it is collapsed, collapses it otherwise. Leaves are ignored.
+     *
+     * @param node the {@code TreeNode} to toggle
+     */
+    public void toggleNodeExpanded(NODE node) {
+        if (isNodeExpanded(node)) {
+            collapseNode(node);
+        } else {
+            expandNode(node);
         }
     }
 
@@ -539,12 +592,8 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
                 IGuiTexture.EMPTY
         ))).addEventListener(UIEvents.MOUSE_DOWN, e -> {
             if (e.button == 0) {
-                if (node.isBranch() && !clickToExpand) {
-                    if (isNodeExpanded(node)) {
-                        collapseNode(node);
-                    } else {
-                        expandNode(node);
-                    }
+                if (node.isBranch() && !expandsOnClick(node)) {
+                    toggleNodeExpanded(node);
                 }
             }
         });
@@ -577,13 +626,15 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
     }
 
     protected void onNodeClicked(UIEvent event, NODE node) {
+        if (event.button == 1) {
+            if (node.isBranch() && rightClickToExpand) {
+                toggleNodeExpanded(node);
+            }
+            return;
+        }
         if (event.button == 0) {
-            if (node.isBranch() && clickToExpand) {
-                if (isNodeExpanded(node)) {
-                    collapseNode(node);
-                } else {
-                    expandNode(node);
-                }
+            if (node.isBranch() && expandsOnClick(node)) {
+                toggleNodeExpanded(node);
             }
             if (!selectableNodeFilter.test(node)) return;
             // shift
@@ -621,11 +672,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
     protected void onNodeDoubleClicked(UIEvent event, NODE node) {
         if (event.button == 0) {
             if (node.isBranch() && doubleClickToExpand) {
-                if (isNodeExpanded(node)) {
-                    collapseNode(node);
-                } else {
-                    expandNode(node);
-                }
+                toggleNodeExpanded(node);
             }
             onDoubleClickNode.accept(node);
         }
