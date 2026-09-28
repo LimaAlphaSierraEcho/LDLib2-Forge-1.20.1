@@ -3,6 +3,8 @@ package com.lowdragmc.lowdraglib2.client;
 import com.lowdragmc.lowdraglib2.CommonProxy;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
+import com.lowdragmc.lowdraglib2.client.font.LDFontManager;
+import com.lowdragmc.lowdraglib2.client.font.LDFontStatsOverlay;
 import com.lowdragmc.lowdraglib2.client.model.forge.LDLRendererModel;
 import com.lowdragmc.lowdraglib2.client.renderer.ATESRRendererProvider;
 import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
@@ -15,7 +17,6 @@ import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerScreen;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUIClientElementComponent;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUITooltipComponent;
-import com.lowdragmc.lowdraglib2.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -28,15 +29,18 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.client.event.*;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy {
 
-    public ClientProxy(IEventBus eventBus) {
+    public ClientProxy(IEventBus eventBus, FMLJavaModLoadingContext context) {
         eventBus.register(this);
+        context.registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
     }
 
     @SubscribeEvent
@@ -75,10 +79,36 @@ public class ClientProxy {
         LDLibShaders.registerShaders(event);
     }
 
+    /**
+     * The client config decides how glyphs are baked, so a change to it invalidates every atlas.
+     * <p>
+     * Only {@code Reloading} matters: at {@code Loading} time nothing has been baked yet. The rebuild is handed
+     * to the client thread because this event is documented to fire on any thread and freeing a texture is not
+     * thread safe.
+     */
+    @SubscribeEvent
+    public void onConfigReloaded(ModConfigEvent.Reloading event) {
+        if (event.getConfig().getSpec() == LDLibClientConfig.SPEC) {
+            Minecraft.getInstance().execute(LDFontManager.INSTANCE::invalidate);
+        }
+    }
+
+    /**
+     * TEMPORARY: development readout, see {@link LDFontStatsOverlay}. Registered above everything so it is not
+     * hidden by the rest of the HUD.
+     */
+    @SubscribeEvent
+    public void registerFontStatsOverlay(RegisterGuiOverlaysEvent event) {
+        if (Platform.isDevEnv()) {
+            event.registerAboveAll("font_stats", LDFontStatsOverlay.INSTANCE);
+        }
+    }
+
     @SubscribeEvent
     public void onRegisterClientReloadListenersEvent(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(PackResourceManager.INSTANCE);
         event.registerReloadListener(StylesheetManager.INSTANCE);
+        event.registerReloadListener(LDFontManager.INSTANCE);
     }
 
     @SubscribeEvent
@@ -87,7 +117,7 @@ public class ClientProxy {
         for (var entry : Minecraft.getInstance().getResourceManager().listResources("models",
                 id -> id.getNamespace().equals(LDLib2.MOD_ID) && id.getPath().endsWith(".json")).entrySet()) {
             if (entry.getValue().sourcePackId().equals(LDLib2.MOD_ID)) {
-                var modelLocation = new ResourceLocation(
+                var modelLocation = ResourceLocation.fromNamespaceAndPath(
                         entry.getKey().getNamespace(),
                         entry.getKey().getPath()
                                 .replace("models/", "")

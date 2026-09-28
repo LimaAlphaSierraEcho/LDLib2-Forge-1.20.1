@@ -170,6 +170,14 @@ dependencies {
     jarJar("dev.vfyjxf:taffy:[1.1.4,1.2)") {
         transitive = false
     }
+    implementation "org.lwjgl:lwjgl-freetype:${lwjgl_version}"
+    minecraftLibrary "org.lwjgl:lwjgl-freetype:${lwjgl_version}"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-macos-arm64"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-windows-arm64"
+    runtimeOnly "org.lwjgl:lwjgl-freetype:${lwjgl_version}:natives-linux-arm64"
     implementation "io.github.llamalad7:mixinextras-forge:0.4.1"
     compileOnly "io.github.llamalad7:mixinextras-common:0.4.1"
     jarJar "io.github.llamalad7:mixinextras-forge:[0.4.1,0.5)"

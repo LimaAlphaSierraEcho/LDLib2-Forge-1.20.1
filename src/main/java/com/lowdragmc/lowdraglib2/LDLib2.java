@@ -31,12 +31,12 @@ public class LDLib2 {
     public static final Gson GSON = new GsonBuilder().create();
     private static File assetsLocation;
 
-    public LDLib2() {
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public LDLib2(FMLJavaModLoadingContext context) {
+        IEventBus eventBus = context.getModEventBus();
         LDLib2.init();
         new CommonProxy(eventBus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            new ClientProxy(eventBus);
+            new ClientProxy(eventBus, context);
         }
         if (Platform.isDevEnv()) {
             ModCreativeModeTab.register(eventBus);

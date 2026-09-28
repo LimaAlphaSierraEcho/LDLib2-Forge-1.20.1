@@ -1,6 +1,9 @@
 package com.lowdragmc.lowdraglib2.client;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
+import com.lowdragmc.lowdraglib2.Platform;
+import com.lowdragmc.lowdraglib2.client.font.LDFontManager;
+import com.lowdragmc.lowdraglib2.client.font.LDFontStatsOverlay;
 import com.lowdragmc.lowdraglib2.editor.resource.EditorResourceEvent;
 import com.lowdragmc.lowdraglib2.editor.resource.ResourceInstance;
 import com.lowdragmc.lowdraglib2.editor.resource.TexturesResource;
@@ -10,10 +13,12 @@ import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.OreSprites;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
@@ -29,6 +34,31 @@ import java.util.List;
 @EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
 public class ClientEventListener {
+
+    /**
+     * The two things about the text renderer that can only be noticed by looking: the font related video
+     * settings, which vanilla gives mods no event for, and rasterized glyph sizes going unused, which is time
+     * based by nature. Both free textures, so both belong between frames rather than inside one.
+     */
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            LDFontManager.INSTANCE.refreshVanillaFontOptions();
+            LDFontManager.INSTANCE.evictStaleRasterSizes();
+        }
+    }
+
+    /**
+     * TEMPORARY: the statistics overlay is a HUD layer, and HUD layers are drawn before the open screen rather
+     * than over it, so on a screen it would sit behind the very interface it is reporting on. Drawing it again
+     * here puts it on top. See {@link LDFontStatsOverlay}.
+     */
+    @SubscribeEvent
+    public static void onScreenRendered(ScreenEvent.Render.Post event) {
+        if (Platform.isDevEnv()) {
+            LDFontStatsOverlay.INSTANCE.render(event.getGuiGraphics(), Minecraft.getInstance().getPartialTick());
+        }
+    }
 
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
