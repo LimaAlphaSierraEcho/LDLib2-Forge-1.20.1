@@ -1,12 +1,27 @@
 # ChangeLogs
+## v2.2.32
+* Improved xei tooltips display
+* Improved LocalSlot to support unlimited stack
+* Fixed immediately appending tooltip
+
+## v2.2.32-forge-1.20.1
+* Fix server packet on singleplayer
+* Fix ModularUI default background
+
 ## v2.2.31
 * Added smooth font rendering
+
+## v2.2.31-forge-1.20.1
+* Implementation of LWJGL 3.3.3 freetype
 
 ## v2.2.30
 * Fixed style resolve crash
 * Improved resource dialog searching
 * Improved ItemLibrary qol
 * Improved FileDialog
+
+## v2.2.30-forge-1.20.1
+* Fix not working FileDialog for FileResourceProvider
 
 ## v2.2.29
 * Fixed EnumAccessor weekmap
@@ -19,10 +34,19 @@
 * Added fallback missport for ngt deserialization and improved save api
 * Bumped up jei compat
 
+## v2.2.29-forge-1.20.1
+* Disable mixin remap
+* Change mappings to parchment
+
 ## v2.2.28
 * Fixed fbo clear color
 * Fixed shader defines injection
 * Improved ngt qol
+
+## v2.2.28-forge-1.20.1
+* Stops bundling Minecraft-provided `fastutil` through the Taffy jarJar dependency.
+* Fixes the production `ScreenMixin` shadow lookup for normal Forge launcher profiles.
+* Fixes production Forge startup issues around refmaps, MixinExtras, shader mixins, and unstable model bakery hooks.
 
 ## v2.2.27
 * Improved draw lines smoothness

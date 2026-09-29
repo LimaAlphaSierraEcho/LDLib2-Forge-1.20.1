@@ -71,6 +71,8 @@ public class ModularUI {
     private boolean shouldCloseOnEsc = true;
     @Setter @Getter @Accessors(fluent = true, chain = true)
     private boolean shouldCloseOnKeyInventory = true;
+    @Getter
+    private boolean defaultBackground;
 
     // runtime
     @OnlyIn(Dist.CLIENT)
@@ -163,10 +165,14 @@ public class ModularUI {
     private UIDebugger uiDebuggerCache;
 
     public ModularUI(UI ui) {
-        this(ui, null);
+        this(ui, null, true);
     }
 
     public ModularUI(UI ui, @Nullable Player player) {
+        this(ui, player, true);
+    }
+
+    public ModularUI(UI ui, @Nullable Player player, boolean defaultBackground) {
         this.ui = ui;
         this.player = player;
         this.taffyTree = new TaffyTree();
@@ -179,6 +185,7 @@ public class ModularUI {
         this.syncManager = new UISyncManager(this);
         this.styleEngine.addStylesheets(this.ui.getStylesheets());
         this.ui.rootElement.addClass("__root__");
+        this.defaultBackground = defaultBackground;
     }
 
     public static ModularUI of(UI ui) {
@@ -1138,20 +1145,12 @@ public class ModularUI {
             if (lastHoveredElement != null && tooltipTexts == null) {
                 var element = lastHoveredElement;
                 while (element != null) {
-                    var event = UIEvent.create(UIEvents.HOVER_TOOLTIPS);
-                    event.hasBubblePhase = false;
-                    event.hasCapturePhase = false;
-                    event.target = element;
-                    UIEventDispatcher.dispatchDirectEvent(event, false);
-                    if (event.hoverTooltips != null) {
-                        setHoverTooltip(event.hoverTooltips.tooltipTexts(),
-                                Optional.ofNullable(event.hoverTooltips.tooltipStack()).orElse(ItemStack.EMPTY),
-                                event.hoverTooltips.tooltipFont(),
-                                event.hoverTooltips.tooltipComponent());
-                        break;
-                    }
-                    if (!element.getStyle().tooltips().isEmpty()) {
-                        setHoverTooltip(element.getStyle().tooltips().asList(), ItemStack.EMPTY, null, null);
+                    var hoverTooltips = element.collectHoverTooltips();
+                    if (hoverTooltips != null) {
+                        setHoverTooltip(hoverTooltips.tooltipTexts(),
+                                Optional.ofNullable(hoverTooltips.tooltipStack()).orElse(ItemStack.EMPTY),
+                                hoverTooltips.tooltipFont(),
+                                hoverTooltips.tooltipComponent());
                         break;
                     }
                     element = element.getParent();

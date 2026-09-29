@@ -31,7 +31,8 @@ public class ModularUIContainerScreen extends AbstractContainerScreen<ModularUIC
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-
+        if(getMenu().getModularUI().isDefaultBackground())
+            this.renderBackground(guiGraphics);
     }
 
     @Override

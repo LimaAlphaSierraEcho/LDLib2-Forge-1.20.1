@@ -1,6 +1,5 @@
 package com.lowdragmc.lowdraglib2.integration.xei.jei;
 
-import com.google.common.base.Suppliers;
 import mezz.jei.api.gui.builder.IIngredientConsumer;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
@@ -14,7 +13,6 @@ import mezz.jei.api.runtime.IIngredientManager;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.common.Internal;
 import mezz.jei.common.config.IClientConfig;
-import mezz.jei.common.gui.JeiTooltip;
 import mezz.jei.common.platform.IPlatformRenderHelper;
 import mezz.jei.common.platform.Services;
 import mezz.jei.common.util.SafeIngredientUtil;
@@ -22,7 +20,6 @@ import mezz.jei.library.gui.ingredients.TagContentTooltipComponent;
 import mezz.jei.library.ingredients.DisplayIngredientAcceptor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -109,22 +106,12 @@ public class JEIRecipeSlotWidget implements IRecipeSlotDrawable {
     }
 
     @Override
-    public void drawHoverOverlays(GuiGraphics guiGraphics) {
-
+    public void getTooltip(ITooltipBuilder tooltipBuilder) {
+        getDisplayedIngredient().ifPresent(ingredient -> getTooltip(tooltipBuilder, ingredient));
     }
 
     @Override
-    @Deprecated
-    public void getTooltip(ITooltipBuilder tooltipBuilder) {}
-
-    public void drawTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        // necessary ?
-        JeiTooltip tooltip = new JeiTooltip();
-        getDisplayedIngredient()
-                .ifPresent(ingredient -> {
-                    getTooltip(tooltip, ingredient);
-                    tooltip.draw(guiGraphics, mouseX, mouseY);
-                });
+    public void drawHoverOverlays(GuiGraphics guiGraphics) {
 
     }
 

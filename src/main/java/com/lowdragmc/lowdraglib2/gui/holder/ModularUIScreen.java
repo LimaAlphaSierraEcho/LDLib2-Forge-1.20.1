@@ -49,7 +49,7 @@ public class ModularUIScreen extends Screen {
         return false;
     }
 
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics guiGraphics) {
         // TODO
     }
 }

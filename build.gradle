@@ -152,7 +152,7 @@ dependencies {
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}") { transitive = false }
     compileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}") { transitive = false }
-    compileOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}") { transitive = false }
+    localImplementation fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 
     compileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:${rei_version}"
     compileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin-forge:${rei_version}"

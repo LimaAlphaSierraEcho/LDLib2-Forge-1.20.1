@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.RandomSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -79,7 +80,7 @@ public class LDLib2 {
     }
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
     public static boolean isClient() {
@@ -87,7 +88,10 @@ public class LDLib2 {
     }
 
     public static boolean isRemote() {
-        return isClient() && Platform.hasClientLevel();
+        if (isClient()) {
+            return Minecraft.getInstance().isSameThread();
+        }
+        return false;
     }
 
     public static boolean isServer() {
