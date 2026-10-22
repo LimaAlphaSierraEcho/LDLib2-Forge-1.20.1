@@ -2,7 +2,6 @@ package com.lowdragmc.lowdraglib2.gui.ui.elements;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.configurator.annotation.*;
-import com.lowdragmc.lowdraglib2.gui.LDLibFonts;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
@@ -22,6 +21,7 @@ import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
 import lombok.Getter;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -264,7 +264,7 @@ public class TextElement extends UIElement {
 
     @OnlyIn(Dist.CLIENT)
     public Font getFont() {
-        return LDLibFonts.font();
+        return Minecraft.getInstance().font;
     }
 
     @Override
@@ -335,7 +335,7 @@ public class TextElement extends UIElement {
                 guiContext.pose.pushPose();
                 guiContext.pose.translate(lineX, lineY, 0);
                 guiContext.pose.scale(scale, scale, 1);
-                LDLibFonts.drawText(guiContext.graphics, font, line, 0, 0, color, dropShadow);
+                guiContext.graphics.drawString(font, line, 0, 0, color, dropShadow);
                 guiContext.pose.popPose();
             }
         });

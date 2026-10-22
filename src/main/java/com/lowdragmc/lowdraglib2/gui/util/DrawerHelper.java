@@ -7,7 +7,6 @@ import com.lowdragmc.lowdraglib2.client.shader.LDLibShaders;
 import com.lowdragmc.lowdraglib2.client.shader.management.ShaderProgram;
 import com.lowdragmc.lowdraglib2.client.shader.uniform.UniformCache;
 import com.lowdragmc.lowdraglib2.client.utils.RenderBufferUtils;
-import com.lowdragmc.lowdraglib2.gui.LDLibFonts;
 import com.lowdragmc.lowdraglib2.utils.FluidHelper;
 import com.lowdragmc.lowdraglib2.utils.ColorUtils;
 import com.lowdragmc.lowdraglib2.math.Position;
@@ -124,7 +123,7 @@ public class DrawerHelper {
 
     public static void drawStringSized(@Nonnull GuiGraphics graphics, String text, float x, float y, int color, boolean dropShadow, float scale, boolean center) {
         graphics.pose().pushPose();
-        Font fontRenderer = LDLibFonts.font();
+        Font fontRenderer = Minecraft.getInstance().font;
         double scaledTextWidth = center ? fontRenderer.getSplitter().stringWidth(text) * scale : 0.0;
         graphics.pose().translate(x - scaledTextWidth / 2.0, y, 0.0f);
         graphics.pose().scale(scale, scale, scale);
@@ -133,7 +132,7 @@ public class DrawerHelper {
     }
 
     public static void drawStringFixedCorner(@Nonnull GuiGraphics graphics, String text, float x, float y, int color, boolean dropShadow, float scale) {
-        Font fontRenderer = LDLibFonts.font();
+        Font fontRenderer = Minecraft.getInstance().font;
         float scaledWidth = fontRenderer.getSplitter().stringWidth(text) * scale;
         float scaledHeight = fontRenderer.lineHeight * scale;
         drawStringSized(graphics, text, x - scaledWidth, y - scaledHeight, color, dropShadow, scale, false);
@@ -144,7 +143,7 @@ public class DrawerHelper {
     }
 
     public static void drawText(@Nonnull GuiGraphics graphics, String text, float x, float y, float scale, int color, boolean shadow) {
-        Font fontRenderer = LDLibFonts.font();
+        Font fontRenderer = Minecraft.getInstance().font;
         RenderSystem.disableBlend();
         graphics.pose().pushPose();
         graphics.pose().scale(scale, scale, 0f);

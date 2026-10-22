@@ -12,7 +12,6 @@ import com.lowdragmc.lowdraglib2.configurator.ui.NumberConfigurator;
 import com.lowdragmc.lowdraglib2.configurator.ui.StringConfigurator;
 import com.lowdragmc.lowdraglib2.editor.ClipboardManager;
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
-import com.lowdragmc.lowdraglib2.gui.LDLibFonts;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.event.CommandEvents;
@@ -1005,7 +1004,7 @@ public class TextField extends BindableUIElement<String> {
     /// rendering
     @OnlyIn(Dist.CLIENT)
     public Font getFont() {
-        return LDLibFonts.font();
+        return Minecraft.getInstance().font;
     }
 
     public Tuple<FormattedCharSequence, Float> getFormattedLine() {
@@ -1058,7 +1057,7 @@ public class TextField extends BindableUIElement<String> {
         guiContext.pose.pushPose();
         guiContext.pose.translate(lineX, lineY, 0);
         guiContext.pose.scale(scale, scale, 1);
-        LDLibFonts.drawText(guiContext.graphics, font, line, 0, 0, rawText.isEmpty() ?
+        guiContext.graphics.drawString(font, line, 0, 0, rawText.isEmpty() ?
                 ColorPattern.LIGHT_GRAY.color : (isError ? textFieldStyle.errorColor() : textFieldStyle.textColor()),
                 !rawText.isEmpty() && textFieldStyle.textShadow());
         guiContext.pose.popPose();

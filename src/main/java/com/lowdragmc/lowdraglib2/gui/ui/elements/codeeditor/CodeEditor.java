@@ -240,8 +240,7 @@ public class CodeEditor extends TextArea {
                 guiContext.pose.pushPose();
                 guiContext.pose.translate(drawX, lineY, 0);
                 guiContext.pose.scale(scale, scale, 1);
-                LDLibFonts.drawText(
-                        guiContext.graphics,
+                guiContext.graphics.drawString(
                         font,
                         textComponent,
                         0,
