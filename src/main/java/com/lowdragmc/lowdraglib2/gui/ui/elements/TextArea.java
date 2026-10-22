@@ -6,6 +6,7 @@ import com.lowdragmc.lowdraglib2.configurator.annotation.ConfigSetter;
 import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import com.lowdragmc.lowdraglib2.editor.ClipboardManager;
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
+import com.lowdragmc.lowdraglib2.gui.LDLibFonts;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Cursor;
@@ -514,7 +515,7 @@ public class TextArea extends BindableUIElement<String[]> {
     // Editing helpers
     @OnlyIn(Dist.CLIENT)
     public Font getFont() {
-        return Minecraft.getInstance().font;
+        return LDLibFonts.font();
     }
 
     public float scale() {
@@ -1173,7 +1174,8 @@ public class TextArea extends BindableUIElement<String[]> {
             guiContext.pose.pushPose();
             guiContext.pose.translate(drawX, lineY, 0);
             guiContext.pose.scale(scale, scale, 1);
-            guiContext.graphics.drawString(
+            LDLibFonts.drawText(
+                    guiContext.graphics,
                     font,
                     textWithFont,
                     0,
@@ -1195,7 +1197,8 @@ public class TextArea extends BindableUIElement<String[]> {
         guiContext.pose.pushPose();
         guiContext.pose.translate(x, y, 0);
         guiContext.pose.scale(scale, scale, 1);
-        guiContext.graphics.drawString(
+        LDLibFonts.drawText(
+                guiContext.graphics,
                 font,
                 textAreaStyle.placeholder(),
                 0,

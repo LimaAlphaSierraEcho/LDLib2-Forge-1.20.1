@@ -72,7 +72,7 @@ public class LDLibShaders {
 	}
 
 	public static Shader load(Shader.ShaderType shaderType, ResourceLocation resourceLocation) {
-		return CACHE.computeIfAbsent(new ResourceLocation(resourceLocation.getNamespace(), "shaders/" + resourceLocation.getPath() + shaderType.shaderExtension), key -> {
+		return CACHE.computeIfAbsent(ResourceLocation.fromNamespaceAndPath(resourceLocation.getNamespace(), "shaders/" + resourceLocation.getPath() + shaderType.shaderExtension), key -> {
 			try {
 				Shader shader = Shader.loadShader(shaderType, key);
 				LDLib2.LOGGER.debug("load shader {} resource {} success", shaderType, resourceLocation);
@@ -103,6 +103,10 @@ public class LDLibShaders {
     private static ShaderInstance SDFRect;
     @Getter
     private static ShaderInstance guiTexture;
+	@Getter
+	private static ShaderInstance sdfText;
+	@Getter
+	private static ShaderInstance rasterText;
 
 	/**
  * the vertex format for HSB color, three four of float
@@ -141,6 +145,12 @@ public class LDLibShaders {
             registerShadersEvent.registerShader(new ShaderInstance(resourceProvider,
                             LDLib2.id("gui_texture"), DefaultVertexFormat.POSITION_TEX_COLOR),
                     shaderInstance -> guiTexture = shaderInstance);
+			registerShadersEvent.registerShader(new ShaderInstance(resourceProvider,
+							LDLib2.id("sdf_text"), DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
+					shaderInstance -> sdfText = shaderInstance);
+			registerShadersEvent.registerShader(new ShaderInstance(resourceProvider,
+							LDLib2.id("raster_text"), DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
+					shaderInstance -> rasterText = shaderInstance);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

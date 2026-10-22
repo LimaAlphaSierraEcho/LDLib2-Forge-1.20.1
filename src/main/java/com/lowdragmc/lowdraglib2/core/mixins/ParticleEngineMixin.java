@@ -18,7 +18,7 @@ import java.util.Queue;
  * @date 2022/7/23
  * @implNote ParticleEngineMixin
  */
-@Mixin(value = ParticleEngine.class, remap = false)
+@Mixin(ParticleEngine.class)
 public abstract class ParticleEngineMixin {
 
     @Shadow @Final private Map<ParticleRenderType, Queue<Particle>> particles;

@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @date 2023/7/28
  * @implNote BlockRenderDispatcherMixin
  */
-@Mixin(value = BlockRenderDispatcher.class, remap = false)
+@Mixin(BlockRenderDispatcher.class)
 public abstract class BlockRenderDispatcherMixin {
     @Shadow
     @Final

@@ -1,6 +1,7 @@
 package com.lowdragmc.lowdraglib2.gui.holder;
 
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
+import com.lowdragmc.lowdraglib2.gui.LDLibFonts;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
@@ -144,7 +145,7 @@ public class DebugScreen extends ModularUIScreen {
             // draw cursor
             graphics.pose().pushPose();
             graphics.pose().translate(0, 0, 500);
-            var font = Minecraft.getInstance().font;
+            var font = LDLibFonts.font();
             DrawerHelper.drawSolidRect(graphics, 0, mouseY - 1, getModularUI().getScreenWidth(), 1, 0xffff0000);
             DrawerHelper.drawSolidRect(graphics, mouseX - 1, 0, 1, getModularUI().getScreenHeight(), 0xffff0000);
             graphics.drawString(font, "pos(%d, %d)".formatted(mouseX, mouseY), mouseX, Math.max(0, mouseY - 10), ColorPattern.YELLOW.color, true);

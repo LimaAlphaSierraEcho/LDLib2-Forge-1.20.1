@@ -23,6 +23,7 @@ import com.lowdragmc.lowdraglib2.syncdata.accessor.direct.RegistryAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.readonly.IManagedObjectAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.readonly.INBTSerializableReadOnlyAccessor;
 import com.lowdragmc.lowdraglib2.utils.*;
+import com.lowdragmc.lowdraglib2.utils.codec.UUIDUtil;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
@@ -251,13 +252,7 @@ public class AccessorRegistries {
         registerAccessor(RegistryAccessor.of((Class<BlockEntityType<?>>)(Class<?>)BlockEntityType.class, BuiltInRegistries.BLOCK_ENTITY_TYPE));
         registerAccessor(CustomDirectAccessor.builder(UUID.class)
                 .codec(LDLibExtraCodecs.UUID)
-                .streamCodec(StreamCodec.of(
-                        (byteBuf, uuid) -> {
-                            byteBuf.writeLong(uuid.getMostSignificantBits());
-                            byteBuf.writeLong(uuid.getLeastSignificantBits());
-                        },
-                        byteBuf -> new UUID(byteBuf.readLong(), byteBuf.readLong())
-                ))
+                .streamCodec(UUIDUtil.STREAM_CODEC)
                 .build());
         registerAccessor(CustomDirectAccessor.builder(BlockState.class)
                 .codec(BlockState.CODEC)
